@@ -1,0 +1,76 @@
+
+
+create a usertable for registration
+use SadiA2
+Go
+
+CREATE TABLE dbo.Usertable 
+(
+UserID INT IDENTITY,
+Firtsname Varchar(20),
+Surname varchar(20),
+HomeAddress varchar(20),
+Phonenumber INT,
+username varchar(20) UNIQUE not null,
+Userpassword varchar(20),
+Scores INT,
+)
+GO
+
+//get user depend on username password and return all colums for that user
+use SadiA2
+GO
+
+CREATE PROCEDURE dbo.GetUser
+	(
+	@Username varchar(20),
+	@Password varchar(20)
+	)
+AS
+	SET NOCOUNT ON
+	SELECT * FROM Usertable WHERE Username = @Username AND Userpassword = @Password;
+	RETURN
+GO
+
+
+//adduserstorage procedure
+
+use SadiA2
+go
+
+create procedure Adduser
+           (
+           @Firtsname varchar(20),@Surname varchar(20),@HomeAddress varchar(20)
+           ,@Phonenumber int,@Username varchar(20),@Userpassword varchar(20),
+           @Scores int
+           )
+     AS
+     insert into dbo.Usertable 
+     (Firtsname,Surname,HomeAddress,Phonenumber,Username,Userpassword,Scores)
+     VALUES (@Firtsname,@Surname,@HomeAddress,@Phonenumber,@Username,@Userpassword,@Scores)
+RETURN
+
+GO
+
+
+// write last score to database
+USE [SadiA2]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[Addscore]
+           (
+           @UserID int,
+           @Scores int
+           )
+     AS 
+    SET NOCOUNT ON;
+    UPDATE Usertable
+    SET Scores = @Scores
+    WHERE UserID=@UserID
+GO
+
+
+
