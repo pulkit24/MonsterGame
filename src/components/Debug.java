@@ -12,13 +12,14 @@ package components;
 public class Debug{
 	public static Boolean MODE = false;
 	public static String onlyAllow = null;
+	public static String dontAllow = null;
 
 //	public static void log(String message){
 //		if(MODE) System.out.println("Debug message: " + message);
 //	}
 
 	public static void log(String caller, String message){
-		if(MODE && (onlyAllow == null || caller.equals(onlyAllow))) System.out
+		if(MODE && (onlyAllow == null || onlyAllow.contains(caller)) && (dontAllow==null || !dontAllow.contains(caller))) System.out
 				.println("Debug message: " + caller + " - " + message);
 	}
 }

@@ -7,20 +7,21 @@
  */
 package server;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import client.GUI;
 import components.Debug;
 import components.grid.Coordinates;
 import components.grid.GameMap;
-import components.network.CommunicationManager;
-import components.packets.JoinSuccessPacket;
+import components.network.ClientInterface;
+import components.network.ServerInterface;
 import components.packets.MovePacket;
-import components.packets.NotificationPacket;
-import components.packets.Packet;
-import components.packets.SuccessPacket;
-import components.packets.UpdatePacket;
 
-public class Monster extends Thread{
-	private CommunicationManager comm; // Abstracts away all the socket communication neatly
+public class Monster extends UnicastRemoteObject implements ClientInterface{
 	private String host;
 	private int port;
 	private int playerId;
@@ -34,21 +35,21 @@ public class Monster extends Thread{
 	private int moveTime = 230; // Time taken to make a move in ms
 	private static int moveTimeSlow = 750;
 
+	private ServerInterface server = null; // for RMI calls!
+
 	/* Determine turns than to slow down motion */
 	private int moveDirection = 0;
 	private static int alongX = 1;
 	private static int alongY = 2;
 
-	public Monster(String host, int port){
+	public Monster(String host, int port) throws RemoteException{
 		this.host = host;
 		this.port = port;
-	}
-	
-	public void run(){
+
 		/* Initialize GUI */
 		gui = new GUI(true);
 		gui.setResetsLeft(resetsLeft);
-		Debug.log("Player", "GUI initiated");
+		Debug.log("Monster", "GUI initiated");
 
 		/* Get details from the player */
 		playerName = "Monster"; // gui.getPlayerDetails();
@@ -65,44 +66,80 @@ public class Monster extends Thread{
 			Debug.log("Monster", "failed");
 			/* Wait a moment */
 			try{
-				Thread.sleep(5000);// sleep 
+				Thread.sleep(5000);// sleep
 			}catch(InterruptedException e){
 				// TODO Auto-generated catch block
 				System.err.println(e.toString());
 			}
 			Debug.log("Monster", "Reconnecting...");
-			
+
 			/* Another attempt to connect */
 			connected = connect(hostDetails[0], Integer.parseInt(hostDetails[1]));
 		}
 
-		if(!gui.isClosed()){
-			Debug.log("Monster", "Connected!");
-			runGame(); // play!
+		Debug.log("Monster", "Connected!");
+		while(!gui.isClosed()){
+
+			// runGame(); // play!
 		}
 
 		/* GUI closed - send quit message if connected */
 		quitGame(connected);
 	}
 
-	private Boolean connect(String host, int port){
+	private boolean connect(String host, int port){
 		/* Connect to server */
-		comm = new CommunicationManager(host, port);
-		Debug.log("Player", "Connecting...");
+		Debug.log("Monster", "Connecting...");
 
 		/* Reflect in GUI */
-		// gui.showConnectionProgress();
+		/* Get the Registry! */
+		try{
+			Registry reg = LocateRegistry.getRegistry(host, port);
+			server = (ServerInterface)reg.lookup("Server");
 
-		return comm.connect();
+			// server = (ServerInterface)Naming.lookup("rmi://"+host+":"+port+"/Server");
+
+			/* Reflect in GUI */
+			// gui.showConnectionProgress();
+
+			/* Register this client as Callback */
+			server.connect(this, host, port, 0, true, "", "", "", "", "", "");
+			return true;
+		}catch(AccessException e){
+			// TODO Auto-generated catch block
+			System.err.println("Monster could not access server registry " + e.toString());
+		}catch(RemoteException e){
+			// TODO Auto-generated catch block
+			System.err.println("Monster could not find the RMI register on the server" + e.toString());
+		}catch(NotBoundException e){
+			// TODO Auto-generated catch block
+			System.err.println("Monster could not bind to the provided RMI address " + e.toString());
+			// }catch(MalformedURLException e){
+			// // TODO Auto-generated catch block
+			// System.err.println("Monster supplied a bad RMI url "+e.toString());
+		}
+
+		return false;
 	}
 
-	private void runGame(){
+	public void joinSuccess(int playerId, Coordinates playerPosition, Coordinates monsterPosition){
+		this.playerId = playerId;
+		this.currentPosition = playerPosition;
+
+		if(gui.isClosed()) return; // if gui closed, did the impatient user close the window?
+
+		/* Joined! Show users the state */
+		// gui.showConnectionConfirmation(); // "waiting for other players..."
+	}
+
+	public void runGame(GameMap startMap) throws RemoteException{
 		/* Try to join a new game */
-		joinGame(); // player id received here
+		// joinGame(); // player id received here
 		/* Joined! Show users the state */
 		// gui.showConnectionConfirmation(); // "waiting for other players..."
 		/* Await game start */
-		awaitGameStart();
+		// awaitGameStart();
+		this.playerMap = startMap;
 
 		if(gui.isClosed()) return; // did the impatient user close the window?
 
@@ -124,7 +161,7 @@ public class Monster extends Thread{
 			firstRun = false;
 
 			/* Request a map and refresh as well */
-			requestMapUpdate();
+			// requestMapUpdate();
 
 			/* Find something to do */
 			// synchronized(GameMap.gameMapLock){
@@ -145,7 +182,7 @@ public class Monster extends Thread{
 			}
 
 			/* Track move direction */
-			Boolean isTurn = false;
+			boolean isTurn = false;
 			if(moveCoords.getX() == currentPosition.getX()){
 				if(moveDirection == alongY) isTurn = true; // it changed move direction! it turned!
 				moveDirection = alongX;
@@ -158,7 +195,7 @@ public class Monster extends Thread{
 
 			/* Movement */
 			Debug.log("Monster", "Move decided");
-			Debug.log("Player", "New coords: " + moveCoords);
+			Debug.log("Monster", "New coords: " + moveCoords);
 			/* Send the move to the server */
 			sendMove(moveCoords, false);
 
@@ -176,56 +213,53 @@ public class Monster extends Thread{
 		}
 	}
 
-	private void joinGame(){
-		/* Follow the Join Game Protocol */
+	// private void joinGame(){
+	// /* Follow the Join Game Protocol */
+	//
+	// /* 1. Send join notice */
+	// Debug.log("Monster", "Sending join request");
+	// server.joinAsMonster();
+	// Debug.log("Monster", "Sent");
+	//
+	// /* 2. Wait for reply */
+	// Debug.log("Monster", "Waiting for reply");
+	// JoinSuccessPacket replyPacket = (JoinSuccessPacket)comm.receiveData();
+	// Debug.log("Monster", "Reply received, result is: " + replyPacket.getSuccess());
+	//
+	// /* Get all useful data out of this packet */
+	// playerId = replyPacket.getPlayerId();
+	// // synchronized(GameMap.gameMapLock){
+	// playerMap = replyPacket.getGameMap();
+	// // }
+	// currentPosition = replyPacket.getInitialPosition();
+	// }
 
-		/* 1. Send join notice */
-		NotificationPacket joinNoticePacket = new NotificationPacket(NotificationPacket.JOINGAME, true);
-		Debug.log("Player", "Sending join request");
-		comm.sendPacket(joinNoticePacket);
-		Debug.log("Player", "Sent");
+	// private void awaitGameStart(){
+	// /* Start Game Protocol */
+	//
+	// /* 1. Wait for start game notice */
+	// Debug.log("Monster " + playerId, "Waiting for start game notice");
+	// NotificationPacket notificationReceived = (NotificationPacket)comm.receiveData();
+	// if(notificationReceived.getNoticeType() == NotificationPacket.STARTGAME) Debug.log("Player " + playerId,
+	// "Received start game notice");
+	// else Debug.log("Monster " + playerId, "Received some stray notification packet");
+	// }
 
-		/* 2. Wait for reply */
-		Debug.log("Player", "Waiting for reply");
-		JoinSuccessPacket replyPacket = (JoinSuccessPacket)comm.receivePacket();
-		Debug.log("Player", "Reply received, result is: " + replyPacket.getSuccess());
-
-		/* Get all useful data out of this packet */
-		playerId = replyPacket.getPlayerId();
-		// synchronized(GameMap.gameMapLock){
-		playerMap = replyPacket.getGameMap();
-		// }
-		currentPosition = replyPacket.getInitialPosition();
-	}
-
-	private void awaitGameStart(){
-		/* Start Game Protocol */
-
-		/* 1. Wait for start game notice */
-		Debug.log("Player " + playerId, "Waiting for start game notice");
-		NotificationPacket notificationReceived = (NotificationPacket)comm.receivePacket();
-		if(notificationReceived.getNoticeType() == NotificationPacket.STARTGAME) Debug.log("Player " + playerId,
-				"Received start game notice");
-		else Debug.log("Player " + playerId, "Received some stray notification packet");
-	}
-
-	private void sendMove(Coordinates moveCoords, Boolean reset){
+	private void sendMove(Coordinates moveCoords, Boolean reset) throws RemoteException{
 		/* Move or Reset Protocol */
 
 		/* 1. Send move */
 		int type = reset ? MovePacket.RESET : MovePacket.REGULAR;
-		MovePacket movePacket = new MovePacket(type, moveCoords);
-		Debug.log("Player " + playerId, "Sending move packet: " + movePacket.getNewCoords().toString());
-		comm.sendPacket(movePacket);
-		Debug.log("Player " + playerId, "Sent");
+		Debug.log("Monster " + playerId, "Sending move packet: " + moveCoords.toString());
+		boolean isMoveSuccess = server.makeMove(this, currentPosition, moveCoords, playerId, true);
+		Debug.log("Monster " + playerId, "Sent");
 
 		/* 2. Wait for reply */
-		Debug.log("Player " + playerId, "Waiting for reply");
-		SuccessPacket successPacket = (SuccessPacket)comm.receivePacket();
-		Debug.log("Player " + playerId, "Reply received, result is: " + successPacket.getSuccess());
+		Debug.log("Monster " + playerId, "Waiting for reply");
+		Debug.log("Monster " + playerId, "Reply received, result is: " + isMoveSuccess);
 
 		/* Reflect in GUI */
-		if(successPacket.getSuccess()){
+		if(isMoveSuccess){
 			/* Execute the move */
 			playerMap.makeMove(playerId, currentPosition, moveCoords);
 			/* Update player's current position */
@@ -241,60 +275,79 @@ public class Monster extends Thread{
 		}
 	}
 
-	private void requestMapUpdate(){
-		/* Request a normal map refresh */
-		NotificationPacket refreshRequestPacket = new NotificationPacket(NotificationPacket.REFRESHREQUEST);
-		Debug.log("Player " + playerId, "Sending request for map refresh");
-		comm.sendPacket(refreshRequestPacket);
-		Debug.log("Player " + playerId, "Sent");
+	// private void requestMapUpdate(){
+	// /* Request a normal map refresh */
+	// Debug.log("Monster " + playerId, "Sending request for map refresh");
+	// server.requestUpdate();
+	// Debug.log("Monster " + playerId, "Sent");
+	//
+	// /* 2. Wait for reply */
+	// Debug.log("Monster " + playerId, "Waiting for reply");
+	// Packet replyPacket = comm.receiveData();
+	// Debug.log("Monster " + playerId, "Update received");
+	// /* Could be blank! */
+	// if(replyPacket.getType() == Packet.UPDATEPACKET){
+	// UpdatePacket updatePacket = (UpdatePacket)replyPacket;
+	//
+	// /* Get all useful data out of this packet */
+	// // synchronized(GameMap.gameMapLock){
+	// playerMap = updatePacket.getNewGameMap();
+	// gui.setGameMap(playerMap);
+	// gui.refresh();
+	// // }
+	//
+	// /* Did you win? */
+	// if(updatePacket.won()){
+	// // gui.showVictoryMessage();
+	// quitGame(false);
+	// }
+	// }
+	// }
 
-		/* 2. Wait for reply */
-		Debug.log("Player " + playerId, "Waiting for reply");
-		Packet replyPacket = comm.receivePacket();
-		Debug.log("Player " + playerId, "Update received");
-		/* Could be blank! */
-		if(replyPacket.getType() == Packet.UPDATEPACKET){
-			UpdatePacket updatePacket = (UpdatePacket)replyPacket;
-
-			/* Get all useful data out of this packet */
-			// synchronized(GameMap.gameMapLock){
-			playerMap = updatePacket.getNewGameMap();
-			gui.setGameMap(playerMap);
-			gui.refresh();
-			// }
-
-			/* Did you win? */
-			if(updatePacket.won()){
-				// gui.showVictoryMessage();
-				quitGame(false);
-			}
-		}
-	}
-
-	public void quitGame(Boolean tellServer){
+	public void quitGame(Boolean tellServer) throws RemoteException{
 		/* Quit Game Protocol */
 
 		/* 1. Send termination notice */
 		if(tellServer){
-			NotificationPacket quitPacket = new NotificationPacket(NotificationPacket.TERMINATED);
-			Debug.log("Player " + playerId, "sending quit notice");
-			comm.sendPacket(quitPacket);
-			Debug.log("Player " + playerId, "Sent");
+			Debug.log("Monster " + playerId, "sending quit notice");
+			server.quitGame(this, true);
+			Debug.log("Monster " + playerId, "Sent");
 		}
 
 		/* Shut down application */
-		try{
-			this.join();
-		}catch(InterruptedException e){
-			// TODO Auto-generated catch block
-			System.err.println(e.toString());
-		}
+		// try{
+		// this.join();
+		// }catch(InterruptedException e){
+		// // TODO Auto-generated catch block
+		// System.err.println(e.toString());
+		// }
+	}
+
+	public void deathNotice(int score){
+		// gui.showDefeatMessage();
+		gui.forceClose();
+	}
+
+	public void gameWonNotice(int score){
+		// gui.showVictoryMessage();
+	}
+
+	public void updateMap(GameMap gameMap){
+		// synchronized(GameMap.gameMapLock){
+		playerMap = gameMap;
+		gui.setGameMap(playerMap);
+		gui.refresh();
+		// }
+	}
+
+	public String getUserName(){
+		return null;
 	}
 
 	/* Standalone executable */
-//	public static void main(String args[]){
-//		Debug.MODE = false;
-//		if(args.length > 0) new Monster(args[0], Integer.parseInt(args[1]));
-//		else new Monster("localhost", 56413);
-//	}
+	// public static void main(String args[]) throws NumberFormatException, RemoteException{
+	// Debug.MODE = true;
+	// if(args.length > 0) new Monster(args[0], Integer.parseInt(args[1]));
+	// else new Monster("localhost", 56413);
+	// }
 }

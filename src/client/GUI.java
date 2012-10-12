@@ -28,6 +28,7 @@ import javax.swing.UIManager;
 import components.Debug;
 import components.grid.Cell;
 import components.grid.GameMap;
+import components.model.User;
 
 public class GUI{
 	/* Graphical variables&elements*/
@@ -45,10 +46,12 @@ public class GUI{
 
 	/* User input */
 	private ArrayList<Integer> userInput; // User input keys: U D, L, R
-	private Boolean closed = false; // Application closed
+	private boolean closed = false; // Application closed
+	private User userDetails = null; // encapsulates user data
+	private boolean isUserDataAvailable = false;
 
 	/* Toggle to hide all GUI */
-	Boolean hidden = false;
+	boolean hidden = false;
 
 	public GUI(){
 		this.hidden = false;
@@ -76,7 +79,7 @@ public class GUI{
 		appWindow = new JFrame("PK Game"); // main window
 		appWindow.addWindowListener(createWindowListener()); // listen for window close
 		appWindow.addKeyListener(createKeyListener()); // listen for arrow keys
-		userInput = new ArrayList<Integer>();//user input store in ArrayList
+		userInput = new ArrayList<Integer>();// user input store in ArrayList
 
 		/* Display the window */
 		appWindow.setSize(windowSize, windowSize);
@@ -95,11 +98,12 @@ public class GUI{
 	}
 
 	/* Ask the user to enter  user name*/
-	public String getPlayerDetails(){
-		JLabel text = new JLabel("Choose a player name: ");
-		text.setFont(fontNormal);
-		return (String)JOptionPane.showInputDialog(appWindow, text, "Configuration Step 1", JOptionPane.PLAIN_MESSAGE, null, null,
-				System.getProperty("user.name"));
+	public User getPlayerDetails(){
+		return userDetails;
+		// JLabel text = new JLabel("Choose a player name: ");
+		// text.setFont(fontNormal);
+		// return (String)JOptionPane.showInputDialog(appWindow, text, "Configuration Step 1", JOptionPane.PLAIN_MESSAGE, null, null,
+		// System.getProperty("user.name"));
 	}
 
 	/* Get/confirm server's ip address and port from the player and also allow  new ip and port */
@@ -138,9 +142,10 @@ public class GUI{
 		JLabel text = new JLabel("Select a position: ");
 		text.setFont(fontNormal);
 		String[] options = {"Top Left", "Top Right", "Bottom Right", "Bottom Left"};
-		return JOptionPane.showOptionDialog(appWindow, text, "Configuration Step 3", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, "Top Left");
+		return JOptionPane.showOptionDialog(appWindow, text, "Configuration Step 3", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE, null, options, "Top Left");
 	}
-	
+
 	/* Let users get to know you're trying to connect */
 	public void showConnectionProgress(){
 		JPanel menu = new JPanel();
@@ -177,19 +182,19 @@ public class GUI{
 	}
 
 	/* Pop up message for dead */
-	public void showDefeatMessage(){
-		JLabel text = new JLabel(wrapped("You were killed!"));
+	public void showDefeatMessage(int score){
+		JLabel text = new JLabel(wrapped("You were killed!<br/>Your score: " + score));
 		text.setFont(fontLarge);
 		JOptionPane.showMessageDialog(appWindow, text, "Game Over", JOptionPane.ERROR_MESSAGE, null);
 	}
 
 	/* Pop up message for victory/winner */
-	public void showVictoryMessage(){
-		JLabel text = new JLabel(wrapped("You won!"));
+	public void showVictoryMessage(int score){
+		JLabel text = new JLabel(wrapped("You won!<br/>Your score: " + score));
 		text.setFont(fontLarge);
 		JOptionPane.showMessageDialog(appWindow, text, "Game Over", JOptionPane.INFORMATION_MESSAGE, null);
 	}
-	
+
 	/* Use to redraw the latest HUD and game map */
 	public void refresh(){
 		/* Combine board with HUD */
@@ -359,6 +364,25 @@ public class GUI{
 	/* Handy utility to wrap text in HTML - used for making text automatically wrap around */
 	private String wrapped(String text){
 		return "<html><body style='width=100%'>" + text + "</html>";
+	}
+
+	public void forceClose(){
+		/* Usually for autonomic threads such as Monster */
+		closed = true;
+	}
+
+	public void showLoginWindow(User previousValues){
+		isUserDataAvailable = false;
+		new Master(this, previousValues);
+	}
+
+	public boolean isUserDataAvailable(){
+		return isUserDataAvailable;
+	}
+
+	public void setUserData(User user){
+		this.userDetails = user;
+		isUserDataAvailable = true;
 	}
 
 }

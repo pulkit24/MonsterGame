@@ -25,6 +25,9 @@ public class NotificationPacket extends Packet{
 	private Boolean monster;
 	/* Join packet preferred position */
 	private int preferredPosition;
+	/* RMI related info */
+	private String myHost;
+	private int myPort;
 
 	public NotificationPacket(int noticeType){
 		super(Packet.NOTIFICATIONPACKET);
@@ -39,12 +42,14 @@ public class NotificationPacket extends Packet{
 		this.monster = monster;
 	}
 
-	public NotificationPacket(int noticeType, int preferredPosition){
+	public NotificationPacket(int noticeType, int preferredPosition, String myHost, int myPort){
 		/* For player joining */
 		super(Packet.NOTIFICATIONPACKET);
 		this.noticeType = noticeType;
 		this.preferredPosition = preferredPosition;
 		this.monster = false;
+		this.myHost = myHost;
+		this.myPort = myPort;
 	}
 
 	public int getNoticeType(){
@@ -57,5 +62,13 @@ public class NotificationPacket extends Packet{
 	
 	public int getPreferredPosition(){
 		return preferredPosition;
+	}
+	
+	public String getHost(){
+		return myHost;
+	}
+	
+	public int getPort(){
+		return myPort;
 	}
 }
