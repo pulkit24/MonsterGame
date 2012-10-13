@@ -1,10 +1,9 @@
-package client;
+package client.view;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -61,7 +60,7 @@ public class Register extends JFrame{
 
 			passwordLabel = new JLabel();
 			passwordField = new JPasswordField();
-			
+
 		}else{
 			firstNameLabel = new JLabel();
 			firstNameField = new JTextField();
@@ -140,22 +139,6 @@ public class Register extends JFrame{
 		passwordField.setToolTipText("Enter password");
 		usernameField.setToolTipText("Enter your password");
 
-		/*usernameField.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e)
-			{
-				textFieldUserName_actionPerformed(e);
-			}
-		});
-		
-		
-		passwordField.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e)
-			{
-				passwordField_actionPerformed(e);
-			}
-		});*/
-
 		// jButton button for submit
 
 		submitButton.setBackground(new Color(204, 204, 255));
@@ -196,14 +179,12 @@ public class Register extends JFrame{
 		addComponent(contentPane, submitButton, 217, 218, 85, 28);
 
 		// Registrations
-		
+
 		/* Error */
-		if(user!=null)
-			JOptionPane.showMessageDialog(contentPane, "Username already taken", "Attention", JOptionPane.ERROR_MESSAGE, null);
-		
+		if(user != null) JOptionPane.showMessageDialog(contentPane, "Username already taken", "Attention", JOptionPane.ERROR_MESSAGE, null);
 
 		this.setTitle("REGISTRATIONS FORM");
-//		this.setLocation(new Point(450, 300));
+		// this.setLocation(new Point(450, 300));
 		this.setLocationRelativeTo(null); // placed in center of window
 		this.setSize(new Dimension(330, 300));
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -217,14 +198,6 @@ public class Register extends JFrame{
 		container.add(c);
 	}
 
-	/*private void textFieldUserName_actionPerformed(ActionEvent e)
-	{
-		
-	}
-	private void passwordField_actionPerformed(ActionEvent e)
-	{
-		
-	}*/
 	private void buttonLogin_actionPerformed(ActionEvent e) throws RemoteException{
 
 		String firstName = new String(firstNameField.getText());
@@ -244,13 +217,6 @@ public class Register extends JFrame{
 
 			JOptionPane.showMessageDialog(null, errorFields);
 
-			/*addressField.setText("");
-			surnameField.setText("");
-			firstNameField.setText("");
-			phoneNumberFiled.setText("");
-			usernameField.setText("");
-			passwordField.setText("");
-			*/
 			submitButton.setEnabled(true);
 			this.setVisible(true);
 		}
@@ -265,41 +231,8 @@ public class Register extends JFrame{
 		}
 
 		else{
-
-			// JLabel optionLabel = new JLabel("<HTML><FONT COLOR = Red>You Entered</FONT><FONT COLOR = RED> <B>" + username
-			// + "</B></FONT> <FONT COLOR = Red>as your User Name.<BR> Is this correct!</FONT></HTML>");
-			// // JLabel optionLabel = new
-			// //
-			// JLabel("<HTML><FONT COLOR = Blue>You Entered</FONT><FONT COLOR = RED> <B>"+password+"</B></FONT> <FONT COLOR = Blue>as your User Name.<BR> Is this correct!</FONT></HTML>");
-			// int confirm = JOptionPane.showConfirmDialog(null, optionLabel);
-			// switch(confirm){ // Switch > Case
-			// case JOptionPane.YES_OPTION: // Attempts to Login user
 			submitButton.setEnabled(false); // Set button enable to false to prevent 2 login attempts
 			this.setVisible(false); // hide register form
-			// break;
-			// case JOptionPane.NO_OPTION: // No button click Going to back. Set text to "")
-			// submitButton.setEnabled(false);
-			// addressField.setText("");
-			// surnameField.setText("");
-			// firstNameField.setText("");
-			// phoneNumberFiled.setText("");
-			// usernameField.setText("");
-			// passwordField.setText("");
-			// submitButton.setEnabled(true);
-			// break;
-			//
-			// case JOptionPane.CANCEL_OPTION: // Cancel button click Going to back Set text to "")
-			// submitButton.setEnabled(false);
-			//
-			// addressField.setText("");
-			// surnameField.setText("");
-			// firstNameField.setText("");
-			// phoneNumberFiled.setText("");
-			// usernameField.setText("");
-			// passwordField.setText("");
-			// submitButton.setEnabled(true);
-			// break;
-			// } // Switch
 			User user = new User(firstName, surname, address, phoneNumber, username, password);
 
 			/* Make consumable by main GUI */
@@ -310,19 +243,4 @@ public class Register extends JFrame{
 
 	}
 
-	/*public static void main(String[] args)
-	{
-		JFrame.setDefaultLookAndFeelDecorated(true);
-		JDialog.setDefaultLookAndFeelDecorated(true);
-		try
-		{
-			//UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		}
-		catch (Exception ex)
-		{
-			System.out.println(ex);
-		}
-		new Register();
-	};
-	*/
 }

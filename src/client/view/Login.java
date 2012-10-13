@@ -1,10 +1,9 @@
-package client;
+package client.view;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -33,12 +32,12 @@ public class Login extends JFrame{
 	private JButton buttonLogin;
 
 	private JPanel contentPane;
-	
+
 	private GUI guiReference;
 
 	public Login(GUI guiReference, String defaultUsername){
 		this.guiReference = guiReference;
-		
+
 		createLogin(defaultUsername);
 		this.setVisible(true);
 	}
@@ -113,13 +112,13 @@ public class Login extends JFrame{
 		addComponent(contentPane, buttonLogin, 150, 75, 83, 28);
 
 		// login Area
-		
+
 		/* Error */
-		if(defaultUsername!=null && !defaultUsername.equals(""))
-			JOptionPane.showMessageDialog(contentPane, "Invalid username/password", "Attention", JOptionPane.ERROR_MESSAGE, null);
+		if(defaultUsername != null && !defaultUsername.equals("")) JOptionPane.showMessageDialog(contentPane, "Invalid username/password",
+				"Attention", JOptionPane.ERROR_MESSAGE, null);
 
 		this.setTitle("MEMBER  LOGIN");
-//		this.setLocation(new Point(80, 200));
+		// this.setLocation(new Point(80, 200));
 		this.setLocationRelativeTo(null); // placed in center of window
 		this.setSize(new Dimension(330, 150));
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -157,52 +156,14 @@ public class Login extends JFrame{
 			buttonLogin.setEnabled(true);
 			this.setVisible(true);
 		}else{
-//			JLabel optionLabel = new JLabel("<HTML><FONT COLOR = Blue>You Entered</FONT><FONT COLOR = RED> <B>" + username
-//					+ "</B></FONT> <FONT COLOR = Blue>as your User Name.<BR> Is this correct!</FONT></HTML>");
-//			// JLabel optionLabel = new
-//			// JLabel("<HTML><FONT COLOR = Blue>You Entered</FONT><FONT COLOR = RED> <B>"+password+"</B></FONT> <FONT COLOR = Blue>as your User Name.<BR> Is this correct!</FONT></HTML>");
-//			int confirm = JOptionPane.showConfirmDialog(null, optionLabel);
-//			switch(confirm){ // Switch > Case
-//			case JOptionPane.YES_OPTION: // Attempts to Login user
-				buttonLogin.setEnabled(false); // Set button enable to false to prevent 2 login attempts
-				this.setVisible(false); // hide register form
-//				break;
-//			case JOptionPane.NO_OPTION: // No button click Going to back. Set text to "")
-//				buttonLogin.setEnabled(false);
-//				textFieldUserName.setText("");
-//				passwordField.setText("");
-//				buttonLogin.setEnabled(true);
-//				break;
-//
-//			case JOptionPane.CANCEL_OPTION: // Cancel button click Going to back Set text to "")
-//				buttonLogin.setEnabled(false);
-//				textFieldUserName.setText("");
-//				passwordField.setText("");
-//				buttonLogin.setEnabled(true);
-//				break;
-//			} // Switch
-			
+			buttonLogin.setEnabled(false); // Set button enable to false to prevent 2 login attempts
+			this.setVisible(false); // hide register form
+
 			/* Make consumable by main GUI */
 			synchronized(guiReference){
 				guiReference.setUserData(new User(username, password));
 			}
-			
+
 		}
 	}
-	/*
-	public static void main(String[] args)
-	{
-		JFrame.setDefaultLookAndFeelDecorated(true);
-		JDialog.setDefaultLookAndFeelDecorated(true);
-		try
-		{
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		}
-		catch (Exception ex)
-		{
-			System.out.println(ex);
-		}
-		new Login();
-	};
-	*/
 }

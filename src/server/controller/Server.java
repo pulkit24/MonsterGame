@@ -2,7 +2,7 @@
  * Hosts the game and enables players to connect.
  * Each connecting player gets assigned a separate SessionManager to henceforth manage requests.
  */
-package server;
+package server.controller;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -12,6 +12,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import server.model.Model;
+import server.view.ServerGUI;
 import components.Debug;
 import components.grid.Cell;
 import components.grid.Coordinates;
@@ -21,7 +22,8 @@ import components.network.ClientInterface;
 import components.network.ServerInterface;
 
 public class Server extends UnicastRemoteObject implements ServerInterface{
-
+	private static final long serialVersionUID = 1911074991385462572L;
+	
 	/* Components and Game Parameters */
 	private static Model model; // for storing user info
 	protected static GameMap serverMap; // must always use with synchronized

@@ -1,4 +1,4 @@
-package client;
+package client.view;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -87,16 +87,5 @@ public class Master extends JFrame{
 		new Register(guiReference, user);
 		this.setVisible(false);
 	}
-//
-//	public static void main(String[] args){
-//		JFrame.setDefaultLookAndFeelDecorated(true);
-//		JDialog.setDefaultLookAndFeelDecorated(true);
-//		try{
-//			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-//		}catch(Exception ex){
-//			System.out.println(ex);
-//		}
-//		new Master();
-//	};
 
 }

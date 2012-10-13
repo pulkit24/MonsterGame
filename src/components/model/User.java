@@ -1,12 +1,13 @@
 package components.model;
 
-import components.Debug;
 
 public class User{
 	private String firstName = null;
 	private String surname = null;
 	private String address = null;
 	private String phone = null;
+	private String username = null;
+	private String password = null;
 
 	public User(String username, String password){
 		super();
@@ -71,9 +72,6 @@ public class User{
 	public void setPassword(String password){
 		this.password = password;
 	}
-
-	private String username = null;
-	private String password = null;
 
 	public boolean isFullRegistration(){
 		return firstName != null && !firstName.equals("") && !firstName.equals("null");

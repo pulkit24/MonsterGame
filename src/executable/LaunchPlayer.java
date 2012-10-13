@@ -4,7 +4,7 @@
 package executable;
 
 import java.rmi.RemoteException;
-import client.Player;
+import client.controller.Player;
 import components.Debug;
 
 public class LaunchPlayer{

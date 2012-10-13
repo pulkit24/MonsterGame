@@ -5,7 +5,7 @@
  * Use show...() functions to show different menus.
  * To show game map, use setGameMap() followed by refresh().
  */
-package client;
+package client.view;
 
 import java.awt.Color;
 import java.awt.Font;

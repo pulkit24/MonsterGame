@@ -4,7 +4,7 @@
 package executable;
 
 import java.rmi.RemoteException;
-import server.Server;
+import server.controller.Server;
 import components.Debug;
 import components.grid.GameMap;
 

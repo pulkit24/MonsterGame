@@ -3,7 +3,7 @@
  * Use constructor to run, any of the show...() functions to display.
  * Use isClosed() to executable if game was canceled, and isStarted to executable if game has started
  */
-package server;
+package server.view;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;

@@ -5,7 +5,7 @@
  * Usage:
  * Initialize, then use start() method to run as separate thread.
  */
-package server;
+package server.controller;
 
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
@@ -13,17 +13,16 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import client.GUI;
+import client.view.GUI;
 import components.Debug;
 import components.grid.Coordinates;
 import components.grid.GameMap;
 import components.network.ClientInterface;
 import components.network.ServerInterface;
-import components.packets.MovePacket;
 
 public class Monster extends UnicastRemoteObject implements ClientInterface{
-	private String host;
-	private int port;
+	private static final long serialVersionUID = -132504913954318600L;
+	
 	private int playerId;
 	private String playerName;
 	protected GameMap playerMap;
@@ -43,8 +42,6 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 	private static int alongY = 2;
 
 	public Monster(String host, int port) throws RemoteException{
-		this.host = host;
-		this.port = port;
 
 		/* Initialize GUI */
 		gui = new GUI(true);
@@ -133,12 +130,6 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 	}
 
 	public void runGame(GameMap startMap) throws RemoteException{
-		/* Try to join a new game */
-		// joinGame(); // player id received here
-		/* Joined! Show users the state */
-		// gui.showConnectionConfirmation(); // "waiting for other players..."
-		/* Await game start */
-		// awaitGameStart();
 		this.playerMap = startMap;
 
 		if(gui.isClosed()) return; // did the impatient user close the window?
@@ -159,12 +150,6 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 			if(firstRun) delay(5000);
 			else delay(moveTime);
 			firstRun = false;
-
-			/* Request a map and refresh as well */
-			// requestMapUpdate();
-
-			/* Find something to do */
-			// synchronized(GameMap.gameMapLock){
 
 			/* Is there any valid move? */
 			Coordinates spottedPlayerLocation = playerMap.getNearestPlayerCoordinates(playerId, currentPosition);
@@ -213,43 +198,10 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 		}
 	}
 
-	// private void joinGame(){
-	// /* Follow the Join Game Protocol */
-	//
-	// /* 1. Send join notice */
-	// Debug.log("Monster", "Sending join request");
-	// server.joinAsMonster();
-	// Debug.log("Monster", "Sent");
-	//
-	// /* 2. Wait for reply */
-	// Debug.log("Monster", "Waiting for reply");
-	// JoinSuccessPacket replyPacket = (JoinSuccessPacket)comm.receiveData();
-	// Debug.log("Monster", "Reply received, result is: " + replyPacket.getSuccess());
-	//
-	// /* Get all useful data out of this packet */
-	// playerId = replyPacket.getPlayerId();
-	// // synchronized(GameMap.gameMapLock){
-	// playerMap = replyPacket.getGameMap();
-	// // }
-	// currentPosition = replyPacket.getInitialPosition();
-	// }
-
-	// private void awaitGameStart(){
-	// /* Start Game Protocol */
-	//
-	// /* 1. Wait for start game notice */
-	// Debug.log("Monster " + playerId, "Waiting for start game notice");
-	// NotificationPacket notificationReceived = (NotificationPacket)comm.receiveData();
-	// if(notificationReceived.getNoticeType() == NotificationPacket.STARTGAME) Debug.log("Player " + playerId,
-	// "Received start game notice");
-	// else Debug.log("Monster " + playerId, "Received some stray notification packet");
-	// }
-
 	private void sendMove(Coordinates moveCoords, Boolean reset) throws RemoteException{
 		/* Move or Reset Protocol */
 
 		/* 1. Send move */
-		int type = reset ? MovePacket.RESET : MovePacket.REGULAR;
 		Debug.log("Monster " + playerId, "Sending move packet: " + moveCoords.toString());
 		boolean isMoveSuccess = server.makeMove(this, currentPosition, moveCoords, playerId, true);
 		Debug.log("Monster " + playerId, "Sent");
@@ -275,35 +227,6 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 		}
 	}
 
-	// private void requestMapUpdate(){
-	// /* Request a normal map refresh */
-	// Debug.log("Monster " + playerId, "Sending request for map refresh");
-	// server.requestUpdate();
-	// Debug.log("Monster " + playerId, "Sent");
-	//
-	// /* 2. Wait for reply */
-	// Debug.log("Monster " + playerId, "Waiting for reply");
-	// Packet replyPacket = comm.receiveData();
-	// Debug.log("Monster " + playerId, "Update received");
-	// /* Could be blank! */
-	// if(replyPacket.getType() == Packet.UPDATEPACKET){
-	// UpdatePacket updatePacket = (UpdatePacket)replyPacket;
-	//
-	// /* Get all useful data out of this packet */
-	// // synchronized(GameMap.gameMapLock){
-	// playerMap = updatePacket.getNewGameMap();
-	// gui.setGameMap(playerMap);
-	// gui.refresh();
-	// // }
-	//
-	// /* Did you win? */
-	// if(updatePacket.won()){
-	// // gui.showVictoryMessage();
-	// quitGame(false);
-	// }
-	// }
-	// }
-
 	public void quitGame(Boolean tellServer) throws RemoteException{
 		/* Quit Game Protocol */
 
@@ -314,13 +237,6 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 			Debug.log("Monster " + playerId, "Sent");
 		}
 
-		/* Shut down application */
-		// try{
-		// this.join();
-		// }catch(InterruptedException e){
-		// // TODO Auto-generated catch block
-		// System.err.println(e.toString());
-		// }
 	}
 
 	public void deathNotice(int score){
@@ -344,10 +260,4 @@ public class Monster extends UnicastRemoteObject implements ClientInterface{
 		return null;
 	}
 
-	/* Standalone executable */
-	// public static void main(String args[]) throws NumberFormatException, RemoteException{
-	// Debug.MODE = true;
-	// if(args.length > 0) new Monster(args[0], Integer.parseInt(args[1]));
-	// else new Monster("localhost", 56413);
-	// }
 }
