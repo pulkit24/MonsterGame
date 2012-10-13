@@ -1,3 +1,10 @@
+/** @Cetin
+ * Shows the control for registering/logging in.
+ * Usage:
+ * Simply initialize new object. 
+ * 	Pass arguments to fill in the default values of the form
+ * 	(useful for showing previously entered "autofill" values)
+ */
 package client.view;
 
 import java.awt.Color;

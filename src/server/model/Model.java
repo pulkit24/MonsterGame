@@ -1,3 +1,11 @@
+/**@Cetin and Pulkit
+ * All database calls here. 
+ * Usage:
+ * 	1. To add a user: add(...)
+ *  2. To check if a user's login details exist: exists(...)
+ *  3. To get score: getScore(...)
+ *  4. To set score: updateScore(...)
+ */
 package server.model;
 
 import java.sql.Connection;

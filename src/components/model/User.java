@@ -1,3 +1,12 @@
+/** @Pulkit
+ * Use as a bean to store all user registration details.
+ * Usage:
+ * 	1. For login details, use the constructor User(username, password).
+ *  2. For registration details, use the constructor User(all details...).
+ *  3. To test whether this bean is about registration or login, use:
+ *  	isFullRegistration() - returns true for registration, false for login
+ * 
+ */
 package components.model;
 
 

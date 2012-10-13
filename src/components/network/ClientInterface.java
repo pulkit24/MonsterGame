@@ -1,3 +1,6 @@
+/** @Pulkit
+ * Remote RMI interface for the server to callback various functions on the player object.
+ */
 package components.network;
 
 import java.rmi.Remote;
